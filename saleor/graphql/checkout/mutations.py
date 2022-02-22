@@ -256,7 +256,7 @@ def get_checkout_by_token(token: uuid.UUID, qs=None):
             "collection_point",
             "billing_address",
             "shipping_address",
-        )
+        ).select_for_update(of=("self",))
     try:
         checkout = qs.get(token=token)
     except ObjectDoesNotExist:
@@ -987,9 +987,9 @@ class CheckoutShippingAddressUpdate(BaseMutation, I18nMixin):
         if token:
             checkout = get_checkout_by_token(
                 token,
-                qs=models.Checkout.objects.prefetch_related(
-                    "lines__variant__product__product_type"
-                ),
+                qs=models.Checkout.objects.select_for_update()
+                .prefetch_related("lines__variant__product__product_type")
+                .select_for_update(of=("self",)),
             )
         # DEPRECATED
         if checkout_id:
@@ -997,9 +997,13 @@ class CheckoutShippingAddressUpdate(BaseMutation, I18nMixin):
                 checkout_id, only_type=Checkout, field="checkout_id"
             )
             try:
-                checkout = models.Checkout.objects.prefetch_related(
-                    "lines__variant__product__product_type"
-                ).get(pk=pk)
+                checkout = (
+                    models.Checkout.objects.prefetch_related(
+                        "lines__variant__product__product_type"
+                    )
+                    .select_for_update(of=("self",))
+                    .get(pk=pk)
+                )
             except ObjectDoesNotExist:
                 raise ValidationError(
                     {
