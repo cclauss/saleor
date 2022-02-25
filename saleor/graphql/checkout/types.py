@@ -11,7 +11,7 @@ from ...shipping.interface import ShippingMethodData
 from ...warehouse import models as warehouse_models
 from ...warehouse.reservations import is_reservation_enabled
 from ..account.dataloaders import AddressByIdLoader
-from ..account.utils import requestor_has_access
+from ..account.utils import check_requestor_access
 from ..channel import ChannelContext
 from ..channel.dataloaders import ChannelByCheckoutLineIDLoader, ChannelByIdLoader
 from ..channel.types import Channel
@@ -300,9 +300,8 @@ class Checkout(ModelObjectType):
     @staticmethod
     def resolve_user(root: models.Checkout, info):
         requestor = get_user_or_app_from_context(info.context)
-        if requestor_has_access(requestor, root.user, AccountPermissions.MANAGE_USERS):
-            return root.user
-        raise PermissionDenied()
+        check_requestor_access(requestor, root.user, AccountPermissions.MANAGE_USERS)
+        return root.user
 
     @staticmethod
     def resolve_email(root: models.Checkout, _info):

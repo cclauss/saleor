@@ -11,6 +11,7 @@ from graphene.utils.str_converters import to_camel_case
 
 from ...account import events as account_events
 from ...account.error_codes import AccountErrorCode
+from ...core.exceptions import PermissionDenied
 from ...core.permissions import AccountPermissions, has_one_of_permissions
 
 if TYPE_CHECKING:
@@ -476,3 +477,23 @@ def requestor_has_access(
 
     """
     return requestor == owner or has_one_of_permissions(requestor, perms)
+
+
+def check_requestor_access(
+    requestor: Union["User", "App"], owner: Optional["User"], *perms
+):
+    """Confirm that requestor can access data, raise `PermissionDenied` otherwise.
+
+    Args:
+        requestor: requestor user or app
+        owner: data owner
+        perms: permissions which can give the access to the data.
+               Requestor needs to have at least one of given permissions
+               to get access to protected resource.
+
+    Raises:
+        PermissionDenied: if requestor cannot access data
+
+    """
+    if not requestor_has_access(requestor, owner, *perms):
+        raise PermissionDenied(permissions=perms)
