@@ -7,8 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("order", "0124_alter_order_token"),
-        ("discount", "0032_merge_20211109_1210"),
+        ("order", "0127_alter_order_token"),
+        ("discount", "0035_auto_20220209_1544"),
     ]
 
     operations = [

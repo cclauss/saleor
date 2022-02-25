@@ -83,6 +83,7 @@ class OrderQueryset(models.QuerySet):
 
 
 class Order(ModelWithMetadata):
+    id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
     number = models.IntegerField(unique=True)
     created = models.DateTimeField(default=now, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False, db_index=True)
@@ -115,10 +116,12 @@ class Order(ModelWithMetadata):
         on_delete=models.SET_NULL,
     )
     user_email = models.EmailField(blank=True, default="")
-    original_token = models.UUIDField(null=True)
     original = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.SET_NULL, to_field="number"
+        "self", null=True, blank=True, on_delete=models.SET_NULL
     )
+    # original = models.ForeignKey(
+    #     "self", null=True, blank=True, on_delete=models.SET_NULL, to_field="number"
+    # )
     origin = models.CharField(max_length=32, choices=OrderOrigin.CHOICES)
 
     currency = models.CharField(
@@ -180,9 +183,6 @@ class Order(ModelWithMetadata):
         max_digits=5, decimal_places=4, default=Decimal("0.0")
     )
 
-    token = models.UUIDField(
-        primary_key=True, editable=False, unique=True, default=uuid4
-    )
     # Token of a checkout instance that this order was created from
     checkout_token = models.CharField(max_length=36, blank=True)
 
@@ -426,14 +426,19 @@ class OrderLineQueryset(models.QuerySet):
 
 
 class OrderLine(models.Model):
+    # order = models.ForeignKey(
+    #     Order,
+    #     related_name="lines",
+    #     editable=False,
+    #     on_delete=models.CASCADE,
+    #     to_field="number",
+    # )
     order = models.ForeignKey(
         Order,
         related_name="lines",
         editable=False,
         on_delete=models.CASCADE,
-        to_field="number",
     )
-    order_token = models.UUIDField(null=True)
     variant = models.ForeignKey(
         "product.ProductVariant",
         related_name="order_lines",
@@ -597,14 +602,19 @@ class OrderLine(models.Model):
 
 class Fulfillment(ModelWithMetadata):
     fulfillment_order = models.PositiveIntegerField(editable=False)
+    # order = models.ForeignKey(
+    #     Order,
+    #     related_name="fulfillments",
+    #     editable=False,
+    #     on_delete=models.CASCADE,
+    #     to_field="number",
+    # )
     order = models.ForeignKey(
         Order,
         related_name="fulfillments",
         editable=False,
         on_delete=models.CASCADE,
-        to_field="number",
     )
-    order_token = models.UUIDField(null=True)
     status = models.CharField(
         max_length=32,
         default=FulfillmentStatus.FULFILLED,
@@ -692,10 +702,10 @@ class OrderEvent(models.Model):
             (type_name.upper(), type_name) for type_name, _ in OrderEvents.CHOICES
         ],
     )
-    order = models.ForeignKey(
-        Order, related_name="events", on_delete=models.CASCADE, to_field="number"
-    )
-    order_token = models.UUIDField(null=True)
+    # order = models.ForeignKey(
+    #     Order, related_name="events", on_delete=models.CASCADE, to_field="number"
+    # )
+    order = models.ForeignKey(Order, related_name="events", on_delete=models.CASCADE)
     parameters = JSONField(blank=True, default=dict, encoder=CustomJsonEncoder)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

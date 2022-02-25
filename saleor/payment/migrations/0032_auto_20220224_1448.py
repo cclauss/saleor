@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("order", "0124_alter_order_token"),
+        ("order", "0127_alter_order_token"),
         ("payment", "0031_merge_0030_auto_20210908_1346_0030_payment_partial"),
     ]
 

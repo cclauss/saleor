@@ -13,7 +13,7 @@ def set_order_number(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("order", "0123_update_order_search_document"),
+        ("order", "0126_alter_order_updated_at"),
     ]
 
     operations = [

@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("order", "0124_alter_order_token"),
+        ("order", "0127_alter_order_token"),
     ]
 
     operations = [
@@ -138,8 +138,15 @@ class Migration(migrations.Migration):
             DO $$
             DECLARE query text;
             BEGIN
-                query := FORMAT('alter table order_order_gift_cards drop constraint %s', (select constraint_name from information_schema.table_constraints WHERE table_name = 'order_order_gift_cards'
-                    and constraint_type = 'FOREIGN KEY' and constraint_name like '%order_order_id'));
+                query := FORMAT(
+                    'alter table order_order_gift_cards drop constraint %s',
+                    (
+                        select constraint_name from information_schema.table_constraints
+                        WHERE table_name = 'order_order_gift_cards'
+                            and constraint_type = 'FOREIGN KEY'
+                            and constraint_name like '%order_order_id'
+                    )
+                );
                 EXECUTE query;
             END $$;
 
